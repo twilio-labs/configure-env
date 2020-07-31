@@ -207,7 +207,7 @@ EXAMPLE=default-value
 
 If for some reason you do not want to populate the value in that way, you can use the `# default:` comment.
 
-The `# default:` comment will override the value specified in the variable declaration if both a present.
+The `# default:` comment will override the value specified in the variable declaration if both are present.
 
 > Important: There won't be any parsing for the default value based on the format. The user of the parsed result is required to do so.
 
@@ -252,6 +252,7 @@ If you want a variable to be copied over without the user being able to modify i
 ```bash
 # description: The path to the SMS webhook
 # format: url
+# configurable: false
 TWILIO_SMS_WEBHOOK_URL=/sms
 ```
 
@@ -263,6 +264,7 @@ TWILIO_SMS_WEBHOOK_URL=/sms
     "key": "TWILIO_SMS_WEBHOOK_URL",
     "description": "Your own phone number",
     "format": "url",
+    "configurable": false,
     "default": "/sms"
   }
 ]
