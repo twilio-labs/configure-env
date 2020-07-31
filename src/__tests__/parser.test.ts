@@ -1,4 +1,5 @@
 import { stripIndent } from 'common-tags';
+import normalize from 'normalize-newline';
 import { DEFAULT_ENTRY, parse } from '../parser';
 
 describe('parse', () => {
@@ -6,7 +7,7 @@ describe('parse', () => {
     test('should handle empty files', () => {
       const file = ``;
       const result = parse(file);
-      expect(result.variables).toEqual([]);
+      expect(normalize(result.outputTemplate)).toEqual('');
     });
 
     test('should handle files with just comments', () => {
@@ -17,7 +18,7 @@ describe('parse', () => {
       # TWILIO_AUTH_TOKEN=
     `;
       const result = parse(file);
-      expect(result.outputTemplate).toEqual(file);
+      expect(normalize(result.outputTemplate)).toEqual(normalize(file));
     });
 
     test('should handle variables', () => {
@@ -28,12 +29,14 @@ describe('parse', () => {
       TWILIO_ACCOUNT_SID=
       `;
       const result = parse(file);
-      expect(result.outputTemplate).toEqual(stripIndent`
+      expect(normalize(result.outputTemplate)).toEqual(
+        normalize(stripIndent`
       # Test file
       
       # Your Twilio Account Sid
       TWILIO_ACCOUNT_SID={{TWILIO_ACCOUNT_SID}}
-      `);
+      `)
+      );
     });
 
     test('should handle variables with default values', () => {
@@ -44,12 +47,14 @@ describe('parse', () => {
       TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       `;
       const result = parse(file);
-      expect(result.outputTemplate).toEqual(stripIndent`
+      expect(normalize(result.outputTemplate)).toEqual(
+        normalize(stripIndent`
       # Test file
       
       # Your Twilio Account Sid
       TWILIO_ACCOUNT_SID={{TWILIO_ACCOUNT_SID}}
-      `);
+      `)
+      );
     });
 
     test('should handle multiple variables', () => {
@@ -64,7 +69,8 @@ describe('parse', () => {
       TWILIO_AUTH_TOKEN=
       `;
       const result = parse(file);
-      expect(result.outputTemplate).toEqual(stripIndent`
+      expect(normalize(result.outputTemplate)).toEqual(
+        normalize(stripIndent`
       # Test file
       
       # Your Twilio Account Sid
@@ -73,7 +79,8 @@ describe('parse', () => {
       # description: Your Twilio Auth Token
       # format: secret
       TWILIO_AUTH_TOKEN={{TWILIO_AUTH_TOKEN}}
-      `);
+      `)
+      );
     });
   });
 
