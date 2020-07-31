@@ -1,23 +1,26 @@
 jest.mock('prompts');
+import { DEFAULT_ENTRY, VariableDeclaration } from '../parser';
 import { createQuestions } from '../prompts';
 
 describe('createQuestions', () => {
   test('creates a question for every entry', () => {
-    const variablesToSet = [
+    const variables: VariableDeclaration[] = [
       {
-        name: 'TWILIO_ACCOUNT_SID',
-        comment: 'Twilio Account SID',
-        defaultValue: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        ...DEFAULT_ENTRY,
+        key: 'TWILIO_ACCOUNT_SID',
+        description: 'Twilio Account SID',
+        default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
       },
       {
-        name: 'TWILIO_AUTH_TOKEN',
-        comment: 'Twilio Auth Token',
-        defaultValue: undefined,
+        ...DEFAULT_ENTRY,
+        key: 'TWILIO_AUTH_TOKEN',
+        description: 'Twilio Auth Token',
+        default: null,
       },
     ];
 
     const questions = createQuestions(
-      { variablesToSet, outputTemplate: '' },
+      { variables, outputTemplate: '' },
       process.stderr
     );
 

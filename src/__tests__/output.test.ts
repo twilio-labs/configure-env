@@ -1,21 +1,20 @@
 import { stripIndent } from 'common-tags';
-import { ParsedExample } from '../exampleFileParser';
 import { createOutput } from '../output';
+import { DEFAULT_ENTRY, ParseResult } from '../parser';
 
 describe('createOutput', () => {
   test('templates variables correctly', () => {
-    const parsedExample: ParsedExample = {
+    const parsedExample: ParseResult = {
       outputTemplate: stripIndent`
         # Twilio Account SID
         TWILIO_ACCOUNT_SID={{TWILIO_ACCOUNT_SID}}
-
-        PORT=3000
       `,
-      variablesToSet: [
+      variables: [
         {
-          name: 'TWILIO_ACCOUNT_SID',
-          comment: 'Twilio Account SID',
-          defaultValue: undefined,
+          ...DEFAULT_ENTRY,
+          key: 'TWILIO_ACCOUNT_SID',
+          description: 'Twilio Account SID',
+          default: null,
         },
       ],
     };
@@ -26,24 +25,21 @@ describe('createOutput', () => {
     expect(output).toEqual(stripIndent`
       # Twilio Account SID
       TWILIO_ACCOUNT_SID="ACyyyyy"
-
-      PORT=3000
     `);
   });
 
   test('handles undefined values', () => {
-    const parsedExample: ParsedExample = {
+    const parsedExample: ParseResult = {
       outputTemplate: stripIndent`
         # Twilio Account SID
         TWILIO_ACCOUNT_SID={{TWILIO_ACCOUNT_SID}}
-
-        PORT=3000
       `,
-      variablesToSet: [
+      variables: [
         {
-          name: 'TWILIO_ACCOUNT_SID',
-          comment: 'Twilio Account SID',
-          defaultValue: undefined,
+          ...DEFAULT_ENTRY,
+          key: 'TWILIO_ACCOUNT_SID',
+          description: 'Twilio Account SID',
+          default: null,
         },
       ],
     };
@@ -52,8 +48,6 @@ describe('createOutput', () => {
     expect(output).toEqual(stripIndent`
       # Twilio Account SID
       TWILIO_ACCOUNT_SID=
-
-      PORT=3000
     `);
   });
 });
