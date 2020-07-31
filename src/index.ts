@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import { info, success } from 'log-symbols';
 import { erase } from 'sisteransi';
 import * as tty from 'tty';
-import { parseExampleFile } from './exampleFileParser';
 import { createOutput } from './output';
+import * as parserLib from './parser';
 import { promptForVariables } from './prompts';
 
 export type Config = {
@@ -13,7 +13,7 @@ export type Config = {
 };
 
 export async function configureEnv(config: Config) {
-  const parsedExample = parseExampleFile(config.exampleFileContent);
+  const parsedExample = parserLib.parse(config.exampleFileContent);
 
   config.promptStream.write(
     `Configuring your environment. Please fill out the following info\n`
@@ -23,9 +23,7 @@ export async function configureEnv(config: Config) {
   const answers = await promptForVariables(parsedExample, config.promptStream);
   const output = createOutput(parsedExample, answers);
 
-  config.promptStream.write(
-    erase.lines(parsedExample.variablesToSet.length + 3)
-  );
+  config.promptStream.write(erase.lines(parsedExample.variables.length + 3));
 
   config.output.write(output, 'utf8');
 
@@ -36,4 +34,4 @@ export async function configureEnv(config: Config) {
   }
 }
 
-export * as parser from './parser';
+export const parser = parserLib;

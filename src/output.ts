@@ -1,18 +1,18 @@
-import { ParsedExample } from './exampleFileParser';
+import { ParseResult } from './parser';
 
 export function createOutput(
-  parsedExample: ParsedExample,
+  parsedExample: ParseResult,
   answers: { [x: string]: string }
 ) {
   let output = parsedExample.outputTemplate;
-  for (let variableToSet of parsedExample.variablesToSet) {
-    let value: string = answers[variableToSet.name];
+  for (let variableToSet of parsedExample.variables) {
+    let value: string = answers[variableToSet.key];
     if (value) {
       value = `"${value.replace(/"/, '"')}"`;
     } else {
       value = '';
     }
-    output = output.replace(`{{${variableToSet.name}}}`, value);
+    output = output.replace(`{{${variableToSet.key}}}`, value);
   }
   return output;
 }

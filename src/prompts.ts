@@ -1,17 +1,29 @@
-import prompts, { Answers, PromptObject } from 'prompts';
+import prompts, { Answers, PromptObject, PromptType } from 'prompts';
 import { WriteStream } from 'tty';
-import { ParsedExample } from './exampleFileParser';
+import { ParseResult, VariableFormat } from './parser';
+
+export function getPromptType(format: VariableFormat): PromptType {
+  switch (format) {
+    case 'secret':
+      return 'invisible';
+    case 'integer':
+    case 'number':
+      return 'number';
+    default:
+      return 'text';
+  }
+}
 
 export function createQuestions(
-  parsedExample: ParsedExample,
+  parsedExample: ParseResult,
   promptStream: WriteStream
 ): PromptObject[] {
-  return parsedExample.variablesToSet.map(entry => {
+  return parsedExample.variables.map(entry => {
     return {
       type: 'text',
-      name: entry.name,
-      message: entry.comment,
-      initial: entry.defaultValue,
+      name: entry.key,
+      message: entry.description || `Please enter a value for ${entry.key}`,
+      initial: entry.default || undefined,
       stdout: promptStream,
     };
   });
@@ -23,7 +35,7 @@ export function handleCancel(prompt: PromptObject, answers: Answers<string>) {
 }
 
 export async function promptForVariables(
-  parsedExample: ParsedExample,
+  parsedExample: ParseResult,
   promptStream: WriteStream
 ) {
   const questions = createQuestions(parsedExample, promptStream);
