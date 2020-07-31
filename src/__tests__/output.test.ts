@@ -1,14 +1,15 @@
 import { stripIndent } from 'common-tags';
+import normalize from 'normalize-newline';
 import { createOutput } from '../output';
 import { DEFAULT_ENTRY, ParseResult } from '../parser';
 
 describe('createOutput', () => {
   test('templates variables correctly', () => {
     const parsedExample: ParseResult = {
-      outputTemplate: stripIndent`
+      outputTemplate: normalize(stripIndent`
         # Twilio Account SID
         TWILIO_ACCOUNT_SID={{TWILIO_ACCOUNT_SID}}
-      `,
+      `),
       variables: [
         {
           ...DEFAULT_ENTRY,
@@ -22,18 +23,22 @@ describe('createOutput', () => {
       TWILIO_ACCOUNT_SID: 'ACyyyyy',
     };
     const output = createOutput(parsedExample, answers);
-    expect(output).toEqual(stripIndent`
+    expect(normalize(output)).toEqual(
+      normalize(
+        stripIndent`
       # Twilio Account SID
       TWILIO_ACCOUNT_SID="ACyyyyy"
-    `);
+    `
+      )
+    );
   });
 
   test('handles undefined values', () => {
     const parsedExample: ParseResult = {
-      outputTemplate: stripIndent`
+      outputTemplate: normalize(stripIndent`
         # Twilio Account SID
         TWILIO_ACCOUNT_SID={{TWILIO_ACCOUNT_SID}}
-      `,
+      `),
       variables: [
         {
           ...DEFAULT_ENTRY,
@@ -45,9 +50,11 @@ describe('createOutput', () => {
     };
     const answers = {};
     const output = createOutput(parsedExample, answers);
-    expect(output).toEqual(stripIndent`
+    expect(normalize(output)).toEqual(
+      normalize(stripIndent`
       # Twilio Account SID
       TWILIO_ACCOUNT_SID=
-    `);
+    `)
+    );
   });
 });
