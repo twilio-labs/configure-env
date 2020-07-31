@@ -336,6 +336,7 @@ type VariableFormat =
   | NestedListFormat<BaseVariableFormat, BaseVariableFormat>;
 
 type VariableDeclaration = {
+  key: string;
   required: boolean;
   format: VariableFormat;
   description: string | null;
