@@ -35,3 +35,5 @@ export async function configureEnv(config: Config) {
     config.promptStream.write('File has successfully been created.');
   }
 }
+
+export * as parser from './parser';
