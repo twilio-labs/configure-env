@@ -51,10 +51,10 @@ A format comment can be used to inform a user what types of value is being expec
 Valid values are:
 
 - `text` (plain text)
-- `phone_number` (representing the [E.164 Phone Number Format](https://www.twilio.com/docs/glossary/what-e164))
+- `phone_number` (representing a valid number in the [E.164 Phone Number Format](https://www.twilio.com/docs/glossary/what-e164))
 - `email`
 - `url` (full or relative path)
-- `sid` ([Twilio specific resource identifier format](https://www.twilio.com/docs/glossary/what-is-a-sid))
+- `sid` ([Twilio specific resource identifier format](https://www.twilio.com/docs/glossary/what-is-a-sid). RegEx: `/^[A-Z]{2}[0-9a-f]{32}$/`)
 - `integer` (specifically any whole number)
 - `number` (any valid number including floating point numbers with `.` as floating point indicator)
 - `secret` (the same as text but UIs might decide to hide the user input)
