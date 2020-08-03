@@ -8,6 +8,7 @@ export function getPromptType(format: VariableFormat): PromptType {
     case 'secret':
       return 'invisible';
     case 'integer':
+    case 'number':
       return 'number';
     default:
       return 'text';
@@ -28,6 +29,7 @@ export function createQuestions(
         initial: entry.default || undefined,
         validate: getValidator(entry.format),
         stdout: promptStream,
+        float: entry.format === 'number' ? true : undefined,
       };
     });
 }
