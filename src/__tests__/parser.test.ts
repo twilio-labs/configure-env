@@ -1,6 +1,16 @@
 import { stripIndent } from 'common-tags';
 import normalize from 'normalize-newline';
-import { DEFAULT_ENTRY, parse } from '../parser';
+import { DEFAULT_ENTRY, parse, removePrefix } from '../parser';
+
+describe('removePrefix', () => {
+  test('removes specified prefix with space', () => {
+    expect(removePrefix('hello:', 'hello: world')).toEqual('world');
+  });
+
+  test('removes prefix without space', () => {
+    expect(removePrefix('hello:', 'hello:world')).toEqual('world');
+  });
+});
 
 describe('parse', () => {
   describe('outputTemplate results', () => {
