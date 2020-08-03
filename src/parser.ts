@@ -81,6 +81,39 @@ export function textToBoolean(text: string): boolean {
 const validFormats: string[] = [...VALID_BASE_FORMATS];
 
 /**
+ * Extracts the format wrapped in `list()` or throws an error if it's an invalid format
+ * @param format a format string wrapped with `list()`
+ */
+export function extractListFormat(format: string): BaseVariableFormat {
+  let listValue = removePrefix('list(', format);
+  listValue = listValue.substr(0, listValue.length - 1).trim();
+  if (validFormats.includes(listValue)) {
+    return listValue as BaseVariableFormat;
+  } else {
+    throw new Error(`Invalid list format value. Received "${listValue}"`);
+  }
+}
+
+/**
+ * Extracts the formats wrapped in `nested_list()` or throws an error if one is an invalid format
+ * @param format a format string wrapped with `nested_list()`
+ */
+export function extractNestedListFormats(
+  format: string
+): [BaseVariableFormat, BaseVariableFormat] {
+  let listValues = removePrefix('nested_list(', format);
+  listValues = listValues.substr(0, listValues.length - 1).trim();
+  const [listValueX, listValueY] = listValues.split(',').map(trim);
+  if (validFormats.includes(listValueX) && validFormats.includes(listValueY)) {
+    return [listValueX as BaseVariableFormat, listValueY as BaseVariableFormat];
+  } else {
+    throw new Error(
+      `Invalid nested list format value. Received "${listValueX}" and "${listValueY}"`
+    );
+  }
+}
+
+/**
  * Parses string to check if it's a valid format. If it isn't it will throw an error. Otherwise it will return a sanitized version
  * @param text string to validate as format
  */
@@ -91,31 +124,15 @@ export function textToFormat(text: string): VariableFormat {
     return sanitizedText;
   } else if (sanitizedText.startsWith('list(') && sanitizedText.endsWith(')')) {
     // list format
-    let listValue = removePrefix('list(', sanitizedText);
-    listValue = listValue.substr(0, listValue.length - 1).trim();
-    if (validFormats.includes(listValue)) {
-      return `list(${validFormats})`;
-    } else {
-      throw new Error(`Invalid list format value. Received "${listValue}"`);
-    }
+    const listValue = extractListFormat(sanitizedText);
+    return `list(${listValue})`;
   } else if (
     sanitizedText.startsWith('nested_list(') &&
     sanitizedText.endsWith(')')
   ) {
     // nested list format
-    let listValues = removePrefix('list(', sanitizedText);
-    listValues = listValues.substr(0, listValues.length - 1).trim();
-    const [listValueX, listValueY] = listValues.split(',').map(trim);
-    if (
-      validFormats.includes(listValueX) &&
-      validFormats.includes(listValueY)
-    ) {
-      return `nested_list(${listValueX},${listValueY})`;
-    } else {
-      throw new Error(
-        `Invalid nested list format value. Received "${listValueX}" and "${listValueY}"`
-      );
-    }
+    const [listValueX, listValueY] = extractNestedListFormats(sanitizedText);
+    return `nested_list(${listValueX},${listValueY})`;
   }
 
   throw new Error(`Invalid format. Received: "${text}"`);
@@ -127,7 +144,7 @@ export function textToFormat(text: string): VariableFormat {
  * @param line text to remove the prefix from
  */
 export function removePrefix(prefix: string, line: string): string {
-  return line.substr(prefix.length + 1).trim();
+  return line.substr(prefix.length).trim();
 }
 
 /**
