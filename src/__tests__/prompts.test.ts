@@ -1,6 +1,7 @@
 jest.mock('prompts');
 import { DEFAULT_ENTRY, VariableDeclaration } from '../parser';
 import { createQuestions } from '../prompts';
+import { baseValidator } from '../validators';
 
 describe('createQuestions', () => {
   test('creates a question for every entry', () => {
@@ -31,6 +32,7 @@ describe('createQuestions', () => {
         message: 'Twilio Account SID',
         initial: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
         stdout: process.stderr,
+        validate: baseValidator,
       },
       {
         type: 'text',
@@ -38,6 +40,7 @@ describe('createQuestions', () => {
         message: 'Twilio Auth Token',
         initial: undefined,
         stdout: process.stderr,
+        validate: baseValidator,
       },
     ]);
   });

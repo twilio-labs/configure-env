@@ -6,7 +6,11 @@ export function createOutput(
 ) {
   let output = parsedExample.outputTemplate;
   for (let variableToSet of parsedExample.variables) {
-    let value: string = answers[variableToSet.key];
+    let value: string = (
+      answers[variableToSet.key] ||
+      variableToSet.default ||
+      ''
+    ).toString();
     if (value) {
       value = `"${value.replace(/"/, '"')}"`;
     } else {
