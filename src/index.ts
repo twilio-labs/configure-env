@@ -5,6 +5,7 @@ import * as tty from 'tty';
 import { createOutput } from './output';
 import * as parserLib from './parser';
 import { promptForVariables } from './prompts';
+import * as validatorLib from './validators';
 
 export type Config = {
   output: fs.WriteStream;
@@ -35,3 +36,4 @@ export async function configureEnv(config: Config) {
 }
 
 export const parser = parserLib;
+export const validators = validatorLib;
