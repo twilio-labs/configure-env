@@ -3,7 +3,7 @@ import { PhoneNumberUtil } from 'google-libphonenumber';
 import {
   BaseVariableFormat,
   extractListFormat,
-  extractNestedListFormats,
+  extractMapFormats,
 } from './parser';
 
 const SID_REGEX = /^[A-Z]{2}[a-f0-9]{32}$/;
@@ -149,48 +149,41 @@ export function validateList(format: string, input: string): boolean | string {
     }
     return true;
   } catch (err) {
-    console.error(err.message);
     return baseValidator(input);
   }
 }
 
 /**
- * Validates the input using a nested_list format including validating the respective elements
+ * Validates the input using a map format including validating the respective elements
  *
- * @param format Format string wrapped in nested_list()
+ * @param format Format string wrapped in map()
  * @param input input to validate
  */
-export function validateNestedList(
-  format: string,
-  input: string
-): boolean | string {
+export function validateMap(format: string, input: string): boolean | string {
   try {
-    const [formatX, formatY] = extractNestedListFormats(format);
+    const [keyFormat, valueFormat] = extractMapFormats(format);
 
     if (!input.includes(',') || !input.includes(';')) {
       return 'Please enter a list of lists. Like: itemA1,itemA2;itemB1,itemB2';
     }
 
-    const values = input.split(';').map(x => x.trim());
-    for (const val of values) {
-      const [nestedValue, ...restNestedValues] = val
-        .split(',')
-        .map(x => x.trim());
-      const valid = BaseValidators[formatX](nestedValue);
-      if (valid !== true) {
-        return valid;
+    const entries = input.split(';').map(x => x.trim());
+    for (const entry of entries) {
+      const [key, ...splitValue] = entry.split(',');
+
+      const validKey = BaseValidators[keyFormat](key.trim());
+      if (validKey !== true) {
+        return `Invalid Key. ${validKey}`;
       }
 
-      for (const nestedVal of restNestedValues) {
-        const valid = BaseValidators[formatY](nestedVal);
-        if (valid !== true) {
-          return valid;
-        }
+      const value = splitValue.join(',');
+      const validValue = BaseValidators[valueFormat](value);
+      if (validValue !== true) {
+        return `Invalid Value. ${validValue}`;
       }
     }
     return true;
   } catch (err) {
-    console.error(err.message);
     return baseValidator(input);
   }
 }
@@ -212,9 +205,9 @@ export function getValidator(
     };
   }
 
-  if (format.startsWith('nested_list(')) {
+  if (format.startsWith('map(')) {
     return input => {
-      return validateNestedList(format, input);
+      return validateMap(format, input);
     };
   }
 
