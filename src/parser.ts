@@ -14,8 +14,8 @@ export const VALID_BASE_FORMATS = [
 
 export type BaseVariableFormat = typeof VALID_BASE_FORMATS[number];
 export type ListFormat = string;
-export type NestedListFormat = string;
-export type VariableFormat = BaseVariableFormat | ListFormat | NestedListFormat;
+export type MapFormat = string;
+export type VariableFormat = BaseVariableFormat | ListFormat | MapFormat;
 
 export type VariableDeclaration = {
   key: string;
@@ -95,20 +95,20 @@ export function extractListFormat(format: string): BaseVariableFormat {
 }
 
 /**
- * Extracts the formats wrapped in `nested_list()` or throws an error if one is an invalid format
- * @param format a format string wrapped with `nested_list()`
+ * Extracts the formats wrapped in `map()` or throws an error if one is an invalid format
+ * @param format a format string wrapped with `map()`
  */
-export function extractNestedListFormats(
+export function extractMapFormats(
   format: string
 ): [BaseVariableFormat, BaseVariableFormat] {
-  let listValues = removePrefix('nested_list(', format);
+  let listValues = removePrefix('map(', format);
   listValues = listValues.substr(0, listValues.length - 1).trim();
-  const [listValueX, listValueY] = listValues.split(',').map(trim);
-  if (validFormats.includes(listValueX) && validFormats.includes(listValueY)) {
-    return [listValueX as BaseVariableFormat, listValueY as BaseVariableFormat];
+  const [keyFormat, valueFormat] = listValues.split(',').map(trim);
+  if (validFormats.includes(keyFormat) && validFormats.includes(valueFormat)) {
+    return [keyFormat as BaseVariableFormat, valueFormat as BaseVariableFormat];
   } else {
     throw new Error(
-      `Invalid nested list format value. Received "${listValueX}" and "${listValueY}"`
+      `Invalid map format value. Received "${keyFormat}" for key and "${valueFormat}" for value`
     );
   }
 }
@@ -124,15 +124,12 @@ export function textToFormat(text: string): VariableFormat {
     return sanitizedText;
   } else if (sanitizedText.startsWith('list(') && sanitizedText.endsWith(')')) {
     // list format
-    const listValue = extractListFormat(sanitizedText);
-    return `list(${listValue})`;
-  } else if (
-    sanitizedText.startsWith('nested_list(') &&
-    sanitizedText.endsWith(')')
-  ) {
-    // nested list format
-    const [listValueX, listValueY] = extractNestedListFormats(sanitizedText);
-    return `nested_list(${listValueX},${listValueY})`;
+    const listValueFormat = extractListFormat(sanitizedText);
+    return `list(${listValueFormat})`;
+  } else if (sanitizedText.startsWith('map(') && sanitizedText.endsWith(')')) {
+    // map format
+    const [keyFormat, valueFormat] = extractMapFormats(sanitizedText);
+    return `map(${keyFormat},${valueFormat})`;
   }
 
   throw new Error(`Invalid format. Received: "${text}"`);

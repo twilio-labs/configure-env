@@ -342,7 +342,7 @@ describe('parse', () => {
       VALID_CALLERS=+12223334444,+13334445555
 
       # description: address book
-      # format: nested_list(text,phone_number)
+      # format: map(text,phone_number)
       ADDRESS_BOOK=dom,+12223334444;phil,+13334445555
     `;
       const result = parse(file);
@@ -413,7 +413,7 @@ describe('parse', () => {
           ...DEFAULT_ENTRY,
           key: 'ADDRESS_BOOK',
           description: 'address book',
-          format: 'nested_list(text,phone_number)',
+          format: 'map(text,phone_number)',
           default: 'dom,+12223334444;phil,+13334445555',
         },
       ]);
@@ -451,7 +451,7 @@ describe('parse', () => {
       expect(() => parse(file)).toThrowError();
     });
 
-    test('handles invalid nested_list values', () => {
+    test('handles invalid map values', () => {
       const file = stripIndent`
       # Test file
       

@@ -4,7 +4,7 @@ import {
   validateEmail,
   validateInteger,
   validateList,
-  validateNestedList,
+  validateMap,
   validateNumber,
   validatePhoneNumber,
   validateSid,
@@ -181,39 +181,61 @@ describe('validateList', () => {
   });
 });
 
-describe('validateNestedLists', () => {
-  test('should handle nested text lists', () => {
-    expect(
-      validateNestedList('nested_list(text,text)', 'hello,see you;hi,bye')
-    ).toEqual(true);
+describe('validateMap', () => {
+  test('should handle maps with the same types', () => {
+    expect(validateMap('map(text,text)', 'hello,see you;hi,bye')).toEqual(true);
   });
 
-  test('should handle nested lists with different types', () => {
+  test('should handle map with different types', () => {
     expect(
-      validateNestedList(
-        'nested_list(text,phone_number)',
+      validateMap(
+        'map(text,phone_number)',
         'dom,+18448144627;twilio,+18448144627'
       )
     ).toEqual(true);
   });
 
-  test('should reject if a nested entry has the wrong format', () => {
+  test('should reject if a value has the wrong format', () => {
     expect(
-      validateNestedList(
-        'nested_list(text,phone_number)',
-        'dom,invalid;twilio,+18448144627'
-      )
+      validateMap('map(text,phone_number)', 'dom,invalid;twilio,+18448144627')
     ).toEqual(
-      'Please enter a valid number in E.164 format. Example: +18448144627'
+      'Invalid Value. Please enter a valid number in E.164 format. Example: +18448144627'
     );
   });
 
-  test('should reject values that are not nested lists', () => {
-    expect(validateNestedList('nested_list(text,text)', 'hello,bye')).toEqual(
+  test('should reject if a key has the wrong format', () => {
+    expect(
+      validateMap(
+        'map(email,phone_number)',
+        'dkundel@twilio.com,+18448144627;twilio,+18448144627'
+      )
+    ).toEqual('Invalid Key. Please enter a valid email address.');
+  });
+
+  test('should handle additional commas in value in text format', () => {
+    expect(
+      validateMap(
+        'map(email,text)',
+        'dkundel@twilio.com,Kundel,Dominik;help@twilio.com,Support,Twilio'
+      )
+    ).toEqual(true);
+  });
+
+  test('should check for format with additional commas in value', () => {
+    expect(
+      validateMap(
+        'map(text,email)',
+        'Dom,dkundel@twilio.com, Twilio;Support,help@twilio.com, Twilio'
+      )
+    ).toEqual('Invalid Value. Please enter a valid email address.');
+  });
+
+  test('should reject maps that are not correctly formatted', () => {
+    expect(validateMap('map(text,text)', 'hello,bye')).toEqual(
       'Please enter a list of lists. Like: itemA1,itemA2;itemB1,itemB2'
     );
 
-    expect(validateNestedList('nested_list(text,text)', 'hello;bye')).toEqual(
+    expect(validateMap('map(text,text)', 'hello;bye')).toEqual(
       'Please enter a list of lists. Like: itemA1,itemA2;itemB1,itemB2'
     );
   });
@@ -231,6 +253,11 @@ describe('getValidator', () => {
     expect(getValidator('url').name).toEqual('validateUrl');
     expect(getValidator('integer').name).toEqual('validateInteger');
     expect(getValidator('number').name).toEqual('validateNumber');
+  });
+
+  test('returns validator functions for list and map', () => {
+    expect(typeof getValidator('list(text)')).toEqual('function');
+    expect(typeof getValidator('map(text,text)')).toEqual('function');
   });
 
   test('returns baseValidator for unknown formats', () => {
