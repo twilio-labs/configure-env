@@ -1,6 +1,11 @@
 import { stripIndent } from 'common-tags';
 import normalize from 'normalize-newline';
-import { DEFAULT_ENTRY, parse, removePrefix } from '../parser';
+import {
+  DEFAULT_ENTRY,
+  parse,
+  parseVariableDeclarationLine,
+  removePrefix,
+} from '../parser';
 
 describe('removePrefix', () => {
   test('removes specified prefix with space', () => {
@@ -9,6 +14,86 @@ describe('removePrefix', () => {
 
   test('removes prefix without space', () => {
     expect(removePrefix('hello:', 'hello:world')).toEqual('world');
+  });
+
+  test('leaves string untouched if prefix is missing', () => {
+    expect(removePrefix('hello:', 'no hello')).toEqual('no hello');
+  });
+});
+
+describe('parseVariableDeclarationLine', () => {
+  test('ignores empty line', () => {
+    const line = '';
+    expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual(
+      DEFAULT_ENTRY
+    );
+  });
+
+  test('ignores variable name without =', () => {
+    const line = 'ACCOUNT_SID';
+    expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual(
+      DEFAULT_ENTRY
+    );
+  });
+
+  test('parses variable with no default', () => {
+    const line = 'ACCOUNT_SID=';
+    expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual({
+      ...DEFAULT_ENTRY,
+      key: 'ACCOUNT_SID',
+    });
+  });
+
+  test('parses variable with default', () => {
+    const line = 'ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+    expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual({
+      ...DEFAULT_ENTRY,
+      key: 'ACCOUNT_SID',
+      default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    });
+  });
+
+  test('parses variable with default in double quotes', () => {
+    const line = 'ACCOUNT_SID="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"';
+    expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual({
+      ...DEFAULT_ENTRY,
+      key: 'ACCOUNT_SID',
+      default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    });
+  });
+
+  test('parses variable with default in single quotes', () => {
+    const line = `ACCOUNT_SID='ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'`;
+    expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual({
+      ...DEFAULT_ENTRY,
+      key: 'ACCOUNT_SID',
+      default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    });
+  });
+
+  test('parses variable with escaped quotes', () => {
+    const line = `GREETING="Hello \"World\""`;
+    expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual({
+      ...DEFAULT_ENTRY,
+      key: 'GREETING',
+      default: 'Hello "World"',
+    });
+  });
+
+  test('parses variable with escaped quotes', () => {
+    const line = `GREETING='Hello \'World\''`;
+    expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual({
+      ...DEFAULT_ENTRY,
+      key: 'GREETING',
+      default: `Hello 'World'`,
+    });
+  });
+
+  test('throws error for invalid characters', () => {
+    const line = `GREETING VALUE='Hello \'World\''`;
+    expect(() =>
+      parseVariableDeclarationLine(DEFAULT_ENTRY, line)
+    ).toThrowError();
   });
 });
 
@@ -179,7 +264,7 @@ describe('parse', () => {
           ...DEFAULT_ENTRY,
           key: 'TWILIO_ACCOUNT_SID',
           description:
-            'Your Twilio Account SID - Available at twilio.com/console',
+            'Your Twilio Account SID\nAvailable at twilio.com/console',
           default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
         },
         {
@@ -229,6 +314,38 @@ describe('parse', () => {
       # description: Your Twilio Auth Token
       # format: secret
       TWILIO_AUTH_TOKEN=
+
+      # description: Your Twilio Phone Number
+      # format: phone_number
+      TWILIO_PHONE_NUMBER=
+
+      # description: Default message to send
+      # format: text
+      DEFAULT_MESSAGE="Hi there how are you?"
+
+      # description: The path for the SMS webhook
+      # format: url
+      TWILIO_SMS_WEBHOOK_URL=/sms
+
+      # description: The PORT the server should run on
+      # format: integer
+      PORT=8080
+
+      # description: Your support email
+      # format: email
+      SUPPORT_EMAIL=help@twilio.com
+
+      # description: The rudimentary value of PI
+      # format: number
+      PI=3.14
+
+      # description: list of valid callers
+      # format: list(phone_number)
+      VALID_CALLERS=+12223334444,+13334445555
+
+      # description: address book
+      # format: nested_list(text,phone_number)
+      ADDRESS_BOOK=dom,+12223334444;phil,+13334445555
     `;
       const result = parse(file);
       expect(result.variables).toEqual([
@@ -245,6 +362,61 @@ describe('parse', () => {
           description: 'Your Twilio Auth Token',
           format: 'secret',
           default: null,
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'TWILIO_PHONE_NUMBER',
+          description: 'Your Twilio Phone Number',
+          format: 'phone_number',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'DEFAULT_MESSAGE',
+          description: 'Default message to send',
+          format: 'text',
+          default: 'Hi there how are you?',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'TWILIO_SMS_WEBHOOK_URL',
+          description: 'The path for the SMS webhook',
+          format: 'url',
+          default: '/sms',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'PORT',
+          description: 'The PORT the server should run on',
+          format: 'integer',
+          default: '8080',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'SUPPORT_EMAIL',
+          description: 'Your support email',
+          format: 'email',
+          default: 'help@twilio.com',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'PI',
+          description: 'The rudimentary value of PI',
+          format: 'number',
+          default: '3.14',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'VALID_CALLERS',
+          description: 'list of valid callers',
+          format: 'list(phone_number)',
+          default: '+12223334444,+13334445555',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'ADDRESS_BOOK',
+          description: 'address book',
+          format: 'nested_list(text,phone_number)',
+          default: 'dom,+12223334444;phil,+13334445555',
         },
       ]);
     });
@@ -328,6 +500,17 @@ describe('parse', () => {
           default: null,
         },
       ]);
+    });
+
+    test('throws error for invalid required value', () => {
+      const file = stripIndent`
+      # Test file
+
+      # description: Message to play
+      # required: number
+      MESSAGE=
+    `;
+      expect(() => parse(file)).toThrowError();
     });
 
     test('recognizes link comment', () => {

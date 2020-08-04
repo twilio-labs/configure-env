@@ -307,7 +307,7 @@ TWILIO_SMS_WEBHOOK_URL=
   },
   {
     "key": "TWILIO_AUTH_TOKEN",
-    "description": "Your Twilio Auth Token - Get it in the Twilio Console",
+    "description": "Your Twilio Auth Token\nGet it in the Twilio Console",
     "default": null
   },
   {
@@ -318,7 +318,7 @@ TWILIO_SMS_WEBHOOK_URL=
 ]
 ```
 
-Please note that multi-line comments will be merged into single lines using `-` as separator. UIs using this information might still decide to truncate the information. For long information consider using the `link:` comment.
+Please note that multi-line comments will be merged into single lines using `\n` as separator. UIs using this information might still decide to truncate the information. For long information consider using the `link:` comment.
 
 ## Type Information of Result
 
