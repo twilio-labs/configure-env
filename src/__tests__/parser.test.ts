@@ -199,8 +199,6 @@ describe('parse', () => {
 
     test('handles variables without any comments', () => {
       const file = stripIndent`
-      # Test file
-      
       TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       
       TWILIO_AUTH_TOKEN=
