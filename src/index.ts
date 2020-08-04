@@ -24,7 +24,7 @@ export async function configureEnv(config: Config) {
   const answers = await promptForVariables(parsedExample, config.promptStream);
   const output = createOutput(parsedExample, answers);
 
-  config.promptStream.write(erase.lines(parsedExample.variables.length + 3));
+  config.promptStream.write(erase.lines(parsedExample.variables.length + 2));
 
   config.output.write(output, 'utf8');
 
