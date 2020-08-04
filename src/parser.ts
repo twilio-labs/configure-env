@@ -144,6 +144,9 @@ export function textToFormat(text: string): VariableFormat {
  * @param line text to remove the prefix from
  */
 export function removePrefix(prefix: string, line: string): string {
+  if (!line.startsWith(prefix)) {
+    return line;
+  }
   return line.substr(prefix.length).trim();
 }
 
@@ -186,7 +189,7 @@ export function parseCommentLine(
   } else {
     if (!currentDeclaration.hasExplicitDescription) {
       addedInfo.description = currentDeclaration.description
-        ? `${currentDeclaration.description} - ${line}`
+        ? `${currentDeclaration.description}\n${line}`
         : line;
     }
   }
@@ -204,13 +207,26 @@ export function parseVariableDeclarationLine(
   currentDeclaration: VariableDeclaration,
   line: string
 ): VariableDeclaration {
-  const [key, value] = line.split('=').map(trim);
+  if (line.length === 0 || !line.includes('=')) {
+    return currentDeclaration;
+  }
+
+  let [key, value] = line.split('=').map(trim);
 
   if (key.match(INVALID_DECLARATION_CHARACTERS)) {
     throw new Error(
       `Key of variable declaration can only contain the following characters. Received: "${key}"`
     );
   }
+
+  if (value.startsWith('"') && value.endsWith('"')) {
+    value = value.substr(1, value.length - 2);
+    value.replace(/\\"/g, '"');
+  } else if (value.startsWith(`'`) && value.endsWith(`'`)) {
+    value = value.substr(1, value.length - 2);
+    value.replace(/\\'/g, `'`);
+  }
+
   const defaultValue = value.length === 0 ? currentDeclaration.default : value;
 
   return { ...currentDeclaration, key, default: defaultValue };
