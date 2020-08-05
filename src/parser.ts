@@ -26,6 +26,7 @@ export type VariableDeclaration = {
   default: string | null;
   configurable: boolean;
   hasExplicitDescription?: boolean;
+  hasAnyComment?: boolean;
 };
 
 export type ParseResult = {
@@ -191,7 +192,7 @@ export function parseCommentLine(
     }
   }
 
-  return { ...currentDeclaration, ...addedInfo };
+  return { ...currentDeclaration, ...addedInfo, hasAnyComment: true };
 }
 
 /**
@@ -225,8 +226,11 @@ export function parseVariableDeclarationLine(
   }
 
   const defaultValue = value.length === 0 ? currentDeclaration.default : value;
+  const configurable = !currentDeclaration.hasAnyComment
+    ? false
+    : currentDeclaration.configurable;
 
-  return { ...currentDeclaration, key, default: defaultValue };
+  return { ...currentDeclaration, key, default: defaultValue, configurable };
 }
 
 /**
@@ -254,6 +258,7 @@ export function parse(envFileContent: string): ParseResult {
         line
       );
       delete fullVariableData.hasExplicitDescription;
+      delete fullVariableData.hasAnyComment;
       variables.push({ ...fullVariableData });
       outputTemplateLines.push(
         `${fullVariableData.key}={{${fullVariableData.key}}}`

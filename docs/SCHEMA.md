@@ -245,7 +245,7 @@ TWILIO_PHONE_NUMBER=
 
 If you want a variable to be copied over without the user being able to modify it, you can use the `configurable` option. It's important to note that the user could still change the value later on. Therefore you should still validate the value when using it.
 
-**Default:** `true`
+**Default:** `true` if a variable has any comment. `false` if it's without a comment
 
 **Example `.env` file:**
 
@@ -254,6 +254,11 @@ If you want a variable to be copied over without the user being able to modify i
 # format: url
 # configurable: false
 TWILIO_SMS_WEBHOOK_URL=/sms
+
+# Twilio Account SID
+TWILIO_ACCOUNT_SID=
+
+PORT=8080
 ```
 
 **Parsed Result (with omitted default values):**
@@ -266,6 +271,20 @@ TWILIO_SMS_WEBHOOK_URL=/sms
     "format": "url",
     "configurable": false,
     "default": "/sms"
+  },
+  {
+    "key": "TWILIO_ACCOUNT_SID",
+    "description": "Twilio Account SID",
+    "format": "text",
+    "configurable": true,
+    "default": null
+  },
+  {
+    "key": "PORT",
+    "description": null,
+    "format": "text",
+    "configurable": false,
+    "default": "8080"
   }
 ]
 ```
