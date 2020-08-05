@@ -1,6 +1,6 @@
 {
   "name": "configure-env",
-  "version": "1.0.0",
+  "version": "2.0.0-0",
   "description": "Configures your project's environment by creating a .env file.",
   "main": "dist/index.js",
   "bin": {
