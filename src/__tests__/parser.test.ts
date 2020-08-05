@@ -41,6 +41,7 @@ describe('parseVariableDeclarationLine', () => {
     expect(parseVariableDeclarationLine(DEFAULT_ENTRY, line)).toEqual({
       ...DEFAULT_ENTRY,
       key: 'ACCOUNT_SID',
+      configurable: false,
     });
   });
 
@@ -50,6 +51,7 @@ describe('parseVariableDeclarationLine', () => {
       ...DEFAULT_ENTRY,
       key: 'ACCOUNT_SID',
       default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      configurable: false,
     });
   });
 
@@ -59,6 +61,7 @@ describe('parseVariableDeclarationLine', () => {
       ...DEFAULT_ENTRY,
       key: 'ACCOUNT_SID',
       default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      configurable: false,
     });
   });
 
@@ -68,6 +71,7 @@ describe('parseVariableDeclarationLine', () => {
       ...DEFAULT_ENTRY,
       key: 'ACCOUNT_SID',
       default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      configurable: false,
     });
   });
 
@@ -77,6 +81,7 @@ describe('parseVariableDeclarationLine', () => {
       ...DEFAULT_ENTRY,
       key: 'GREETING',
       default: 'Hello "World"',
+      configurable: false,
     });
   });
 
@@ -86,6 +91,23 @@ describe('parseVariableDeclarationLine', () => {
       ...DEFAULT_ENTRY,
       key: 'GREETING',
       default: `Hello 'World'`,
+      configurable: false,
+    });
+  });
+
+  test('sets configurable to true if declaration has a comment', () => {
+    const line = `GREETING='Hello \'World\''`;
+    expect(
+      parseVariableDeclarationLine(
+        { ...DEFAULT_ENTRY, hasAnyComment: true },
+        line
+      )
+    ).toEqual({
+      ...DEFAULT_ENTRY,
+      key: 'GREETING',
+      default: `Hello 'World'`,
+      configurable: true,
+      hasAnyComment: true,
     });
   });
 
@@ -209,11 +231,13 @@ describe('parse', () => {
           ...DEFAULT_ENTRY,
           key: 'TWILIO_ACCOUNT_SID',
           default: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+          configurable: false,
         },
         {
           ...DEFAULT_ENTRY,
           key: 'TWILIO_AUTH_TOKEN',
           default: null,
+          configurable: false,
         },
       ]);
     });
@@ -603,6 +627,8 @@ describe('parse', () => {
       # format: url
       # configurable: false
       TWILIO_SMS_WEBHOOK_URL=/sms
+
+      PORT=8000
     `;
       const result = parse(file);
       expect(result.variables).toEqual([
@@ -631,6 +657,13 @@ describe('parse', () => {
           format: 'url',
           configurable: false,
           default: '/sms',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'PORT',
+          description: null,
+          configurable: false,
+          default: '8000',
         },
       ]);
     });
