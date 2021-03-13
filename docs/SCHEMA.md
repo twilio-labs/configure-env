@@ -60,6 +60,7 @@ Valid values are:
 - `secret` (the same as text but UIs might decide to hide the user input)
 - `list(<X>)` (a comma separated list of values, where `<X>` defines any of the formats above). Example: `list(email)` for `support@twilio.com,open-source@twilio.com`. Use `text` for any type
 - `map(<X>,<Y>)` (a comma and semicolon separted list. often used for key value pairs. `<X>` and `<Y>` represent the format for the key and value). Example: `map(email,phone_number)` for: `help@twilio.com,+1222333444;support@twilio.com,+13334445555`
+- `file(<X>)` (the path to a file in format `<X>`, which currently only supports `json`). Example: `file(json)` for `config/test.json`
 
 **Default:** `text`
 
@@ -354,7 +355,8 @@ type BaseVariableFormat =
 type VariableFormat =
   | BaseVariableFormat
   | ListFormat<BaseVariableFormat>
-  | MapFormat<BaseVariableFormat, BaseVariableFormat>;
+  | MapFormat<BaseVariableFormat, BaseVariableFormat>
+  | FileFormat<'json'>;
 
 type VariableDeclaration = {
   key: string;
