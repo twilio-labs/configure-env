@@ -5,6 +5,7 @@ import {
   validateInteger,
   validateList,
   validateMap,
+  validateFile,
   validateNumber,
   validatePhoneNumber,
   validateSid,
@@ -241,6 +242,39 @@ describe('validateMap', () => {
   });
 });
 
+describe('validateFile', () => {
+  test('should handle json files', () => {
+    expect(validateFile('file(json)', 'testFile.json')).toEqual(true);
+  });
+
+  test('should reject unknown file types', () => {
+    expect(validateFile('file(unknown)', 'testFile')).toEqual(
+      'Invalid file format value. Received "unknown"'
+    );
+  });
+
+  test('should reject absolute file paths', () => {
+    expect(validateFile('file(json)', '/testFile')).toEqual(
+      'Please enter a relative path.'
+    );
+  });
+
+  test('should reject paths containing ".."', () => {
+    expect(validateFile('file(json)', '../testFile')).toEqual(
+      `Please enter a path that does not include '..'.`
+    );
+    expect(validateFile('file(json)', 'directory/../testFile')).toEqual(
+      `Please enter a path that does not include '..'.`
+    );
+    expect(validateFile('file(json)', '../..')).toEqual(
+      `Please enter a path that does not include '..'.`
+    );
+    expect(validateFile('file(json)', '..')).toEqual(
+      `Please enter a path that does not include '..'.`
+    );
+  });
+});
+
 describe('getValidator', () => {
   test('returns the base validator', () => {
     expect(getValidator('text').name).toEqual('baseValidator');
@@ -255,9 +289,10 @@ describe('getValidator', () => {
     expect(getValidator('number').name).toEqual('validateNumber');
   });
 
-  test('returns validator functions for list and map', () => {
+  test('returns validator functions for list, map, and file', () => {
     expect(typeof getValidator('list(text)')).toEqual('function');
     expect(typeof getValidator('map(text,text)')).toEqual('function');
+    expect(typeof getValidator('file(json)')).toEqual('function');
   });
 
   test('returns baseValidator for unknown formats', () => {

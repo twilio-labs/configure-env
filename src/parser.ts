@@ -12,10 +12,17 @@ export const VALID_BASE_FORMATS = [
   'secret',
 ] as const;
 
+export const VALID_FILE_FORMATS = ['json'] as const;
+
 export type BaseVariableFormat = typeof VALID_BASE_FORMATS[number];
 export type ListFormat = string;
 export type MapFormat = string;
-export type VariableFormat = BaseVariableFormat | ListFormat | MapFormat;
+export type FileFormat = string;
+export type VariableFormat =
+  | BaseVariableFormat
+  | ListFormat
+  | MapFormat
+  | FileFormat;
 
 export type VariableDeclaration = {
   key: string;
@@ -114,6 +121,22 @@ export function extractMapFormats(
   }
 }
 
+const validFileFormats: string[] = [...VALID_FILE_FORMATS];
+
+/**
+ * Extracts the format wrapped in `file()` or throws an error if it's an invalid format
+ * @param format a format string wrapped with `file()`
+ */
+export function extractFileFormat(format: string): BaseVariableFormat {
+  let fileValue = removePrefix('file(', format);
+  fileValue = fileValue.substr(0, fileValue.length - 1).trim();
+  if (validFileFormats.includes(fileValue)) {
+    return fileValue as BaseVariableFormat;
+  } else {
+    throw new Error(`Invalid file format value. Received "${fileValue}"`);
+  }
+}
+
 /**
  * Parses string to check if it's a valid format. If it isn't it will throw an error. Otherwise it will return a sanitized version
  * @param text string to validate as format
@@ -131,6 +154,10 @@ export function textToFormat(text: string): VariableFormat {
     // map format
     const [keyFormat, valueFormat] = extractMapFormats(sanitizedText);
     return `map(${keyFormat},${valueFormat})`;
+  } else if (sanitizedText.startsWith('file(') && sanitizedText.endsWith(')')) {
+    // file format
+    const fileValueFormat = extractFileFormat(sanitizedText);
+    return `file(${fileValueFormat})`;
   }
 
   throw new Error(`Invalid format. Received: "${text}"`);

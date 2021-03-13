@@ -4,6 +4,7 @@ import {
   BaseVariableFormat,
   extractListFormat,
   extractMapFormats,
+  extractFileFormat,
 } from './parser';
 
 const SID_REGEX = /^[A-Z]{2}[a-f0-9]{32}$/;
@@ -189,6 +190,43 @@ export function validateMap(format: string, input: string): boolean | string {
 }
 
 /**
+ * Verifies that a file path is relative and does not contain ..
+ * @param input path string to verify
+ */
+export function validateFilePath(input: string): boolean | string {
+  if (input.startsWith('/')) {
+    return 'Please enter a relative path.';
+  }
+
+  if (
+    input
+      .trim()
+      .split('/')
+      .includes('..')
+  ) {
+    return `Please enter a path that does not include '..'.`;
+  }
+
+  return true;
+}
+
+/**
+ * Validates the input using a file format including validating the input path
+ *
+ * @param format Format string wrapped in file()
+ * @param input input to validate
+ */
+export function validateFile(format: string, input: string): boolean | string {
+  try {
+    extractFileFormat(format);
+
+    return validateFilePath(input);
+  } catch (err) {
+    return err.message;
+  }
+}
+
+/**
  * Returns the right validator function depending on the format
  * @param format a VariableFormat string
  */
@@ -208,6 +246,12 @@ export function getValidator(
   if (format.startsWith('map(')) {
     return input => {
       return validateMap(format, input);
+    };
+  }
+
+  if (format.startsWith('file(')) {
+    return input => {
+      return validateFile(format, input);
     };
   }
 
