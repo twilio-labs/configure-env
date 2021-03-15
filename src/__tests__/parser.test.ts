@@ -368,6 +368,10 @@ describe('parse', () => {
       # description: address book
       # format: map(text,phone_number)
       ADDRESS_BOOK=dom,+12223334444;phil,+13334445555
+
+      # description: config file
+      # format: file(json)
+      CONFIG_FILE_PATH=config/test.json
     `;
       const result = parse(file);
       expect(result.variables).toEqual([
@@ -440,6 +444,13 @@ describe('parse', () => {
           format: 'map(text,phone_number)',
           default: 'dom,+12223334444;phil,+13334445555',
         },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'CONFIG_FILE_PATH',
+          description: 'config file',
+          format: 'file(json)',
+          default: 'config/test.json',
+        },
       ]);
     });
 
@@ -483,6 +494,22 @@ describe('parse', () => {
       # format: nest_list(phone_number,boolean)
       TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       
+      # description: Your Twilio Auth Token
+      # format: secret
+      TWILIO_AUTH_TOKEN=
+    `;
+
+      expect(() => parse(file)).toThrowError();
+    });
+
+    test('handles invalid file format specifiers', () => {
+      const file = stripIndent`
+      # Test file
+
+      # description: A Config File
+      # format: file(unknown)
+      CONFIG=test
+
       # description: Your Twilio Auth Token
       # format: secret
       TWILIO_AUTH_TOKEN=
