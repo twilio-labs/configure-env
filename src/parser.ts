@@ -34,6 +34,7 @@ export type VariableDeclaration = {
   configurable: boolean;
   hasExplicitDescription?: boolean;
   hasAnyComment?: boolean;
+  credentialKey: string | null;
 };
 
 export type ParseResult = {
@@ -49,6 +50,7 @@ export const DEFAULT_ENTRY: VariableDeclaration = {
   link: null,
   default: null,
   configurable: true,
+  credentialKey: null,
 };
 
 const INVALID_DECLARATION_CHARACTERS = /[^a-zA-Z1-9_]/i;
@@ -211,6 +213,9 @@ export function parseCommentLine(
   } else if (line.startsWith('configurable:')) {
     const val = textToBoolean(removePrefix('configurable:', line));
     addedInfo.configurable = val;
+  } else if (line.startsWith('credentialKey:')) {
+    const val = trim(removePrefix('credentialKey:', line));
+    addedInfo.credentialKey = val;
   } else {
     if (!currentDeclaration.hasExplicitDescription) {
       addedInfo.description = currentDeclaration.description

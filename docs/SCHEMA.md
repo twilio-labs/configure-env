@@ -22,6 +22,7 @@ Any comments that are immediately before a "variable declaration" will be evalua
 - [`link`](#link)
 - [`default`](#default)
 - [`configurable`](#configurable)
+- [`credentialKey`](#credentialKey)
 
 These comments can be used in any order as long as they are right before the variable declaration with no empty line before it.
 
@@ -286,6 +287,35 @@ PORT=8080
     "format": "text",
     "configurable": false,
     "default": "8080"
+  }
+]
+```
+
+### `credentialKey`
+
+The `credentialKey` option is used with `file(json)` formatted variables to specify which field of the specified file's JSON content contains authentication credentials.
+
+**Default:** `null`
+
+**Example `.env` file:**
+
+```bash
+# description: The authentication JSON file
+# format: file(json)
+# credentialKey: auth
+AUTH_JSON=auth.json
+```
+
+**Parsed Result (with omitted default values):**
+
+```json
+[
+  {
+    "key": "AUTH_JSON",
+    "description": "The authentication JSON file",
+    "format": "file(json)",
+    "credentialKey": "auth",
+    "default": "auth.json"
   }
 ]
 ```

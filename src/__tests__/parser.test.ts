@@ -325,6 +325,37 @@ describe('parse', () => {
       ]);
     });
 
+    test('recognizes credentialKey comment', () => {
+      const file = stripIndent`
+      # Test file
+
+      # description: The authentication JSON file
+      # format: file(json)
+      # credentialKey: auth
+      AUTH_JSON=auth.json
+
+      # description: Your Twilio Auth Token
+      TWILIO_AUTH_TOKEN=
+    `;
+      const result = parse(file);
+      expect(result.variables).toEqual([
+        {
+          ...DEFAULT_ENTRY,
+          key: 'AUTH_JSON',
+          description: 'The authentication JSON file',
+          format: 'file(json)',
+          credentialKey: 'auth',
+          default: 'auth.json',
+        },
+        {
+          ...DEFAULT_ENTRY,
+          key: 'TWILIO_AUTH_TOKEN',
+          description: 'Your Twilio Auth Token',
+          default: null,
+        },
+      ]);
+    });
+
     test('recognizes format comment', () => {
       const file = stripIndent`
       # Test file
