@@ -190,12 +190,15 @@ export function validateMap(format: string, input: string): boolean | string {
 }
 
 /**
- * Verifies that a file path is relative and does not contain ..
+ * Verifies that a file path has a valid extension and does not contain ..
  * @param input path string to verify
  */
-export function validateFilePath(input: string): boolean | string {
-  if (input.startsWith('/')) {
-    return 'Please enter a relative path.';
+export function validateFilePath(
+  input: string,
+  fileType: string
+): boolean | string {
+  if (!input.trim().endsWith(`.${fileType}`)) {
+    return `Please enter a filename that ends with '.${fileType}'.`;
   }
 
   if (
@@ -218,9 +221,9 @@ export function validateFilePath(input: string): boolean | string {
  */
 export function validateFile(format: string, input: string): boolean | string {
   try {
-    extractFileFormat(format);
+    const fileType = extractFileFormat(format);
 
-    return validateFilePath(input);
+    return validateFilePath(input, fileType);
   } catch (err) {
     return err.message;
   }

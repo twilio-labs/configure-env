@@ -244,7 +244,7 @@ describe('validateMap', () => {
 
 describe('validateFile', () => {
   test('should handle json files', () => {
-    expect(validateFile('file(json)', 'testFile.json')).toEqual(true);
+    expect(validateFile('file(json)', '/testFile.json')).toEqual(true);
   });
 
   test('should reject unknown file types', () => {
@@ -253,23 +253,23 @@ describe('validateFile', () => {
     );
   });
 
-  test('should reject absolute file paths', () => {
+  test('should reject paths with the wrong file extension', () => {
     expect(validateFile('file(json)', '/testFile')).toEqual(
-      'Please enter a relative path.'
+      `Please enter a filename that ends with '.json'.`
+    );
+    expect(validateFile('file(json)', '/testFile.txt')).toEqual(
+      `Please enter a filename that ends with '.json'.`
     );
   });
 
   test('should reject paths containing ".."', () => {
-    expect(validateFile('file(json)', '../testFile')).toEqual(
+    expect(validateFile('file(json)', '../testFile.json')).toEqual(
       `Please enter a path that does not include '..'.`
     );
-    expect(validateFile('file(json)', 'directory/../testFile')).toEqual(
+    expect(validateFile('file(json)', 'directory/../testFile.json')).toEqual(
       `Please enter a path that does not include '..'.`
     );
-    expect(validateFile('file(json)', '../..')).toEqual(
-      `Please enter a path that does not include '..'.`
-    );
-    expect(validateFile('file(json)', '..')).toEqual(
+    expect(validateFile('file(json)', '../../testFile.json')).toEqual(
       `Please enter a path that does not include '..'.`
     );
   });

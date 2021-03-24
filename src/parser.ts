@@ -17,6 +17,7 @@ export const VALID_FILE_FORMATS = ['json'] as const;
 export type BaseVariableFormat = typeof VALID_BASE_FORMATS[number];
 export type ListFormat = string;
 export type MapFormat = string;
+export type BaseFileFormat = typeof VALID_FILE_FORMATS[number];
 export type FileFormat = string;
 export type VariableFormat =
   | BaseVariableFormat
@@ -34,7 +35,7 @@ export type VariableDeclaration = {
   configurable: boolean;
   hasExplicitDescription?: boolean;
   hasAnyComment?: boolean;
-  credentialKey: string | null;
+  contentKey: string | null;
 };
 
 export type ParseResult = {
@@ -50,7 +51,7 @@ export const DEFAULT_ENTRY: VariableDeclaration = {
   link: null,
   default: null,
   configurable: true,
-  credentialKey: null,
+  contentKey: null,
 };
 
 const INVALID_DECLARATION_CHARACTERS = /[^a-zA-Z1-9_]/i;
@@ -129,11 +130,11 @@ const validFileFormats: string[] = [...VALID_FILE_FORMATS];
  * Extracts the format wrapped in `file()` or throws an error if it's an invalid format
  * @param format a format string wrapped with `file()`
  */
-export function extractFileFormat(format: string): BaseVariableFormat {
+export function extractFileFormat(format: string): BaseFileFormat {
   let fileValue = removePrefix('file(', format);
   fileValue = fileValue.substr(0, fileValue.length - 1).trim();
   if (validFileFormats.includes(fileValue)) {
-    return fileValue as BaseVariableFormat;
+    return fileValue as BaseFileFormat;
   } else {
     throw new Error(`Invalid file format value. Received "${fileValue}"`);
   }
@@ -213,9 +214,9 @@ export function parseCommentLine(
   } else if (line.startsWith('configurable:')) {
     const val = textToBoolean(removePrefix('configurable:', line));
     addedInfo.configurable = val;
-  } else if (line.startsWith('credentialKey:')) {
-    const val = trim(removePrefix('credentialKey:', line));
-    addedInfo.credentialKey = val;
+  } else if (line.startsWith('contentKey:')) {
+    const val = trim(removePrefix('contentKey:', line));
+    addedInfo.contentKey = val;
   } else {
     if (!currentDeclaration.hasExplicitDescription) {
       addedInfo.description = currentDeclaration.description

@@ -325,14 +325,14 @@ describe('parse', () => {
       ]);
     });
 
-    test('recognizes credentialKey comment', () => {
+    test('recognizes contentKey comment', () => {
       const file = stripIndent`
       # Test file
 
       # description: The authentication JSON file
       # format: file(json)
-      # credentialKey: auth
-      AUTH_JSON=auth.json
+      # contentKey: AUTH_JSON_CONTENT
+      AUTH_JSON=/auth.json
 
       # description: Your Twilio Auth Token
       TWILIO_AUTH_TOKEN=
@@ -344,8 +344,8 @@ describe('parse', () => {
           key: 'AUTH_JSON',
           description: 'The authentication JSON file',
           format: 'file(json)',
-          credentialKey: 'auth',
-          default: 'auth.json',
+          contentKey: 'AUTH_JSON_CONTENT',
+          default: '/auth.json',
         },
         {
           ...DEFAULT_ENTRY,
@@ -402,7 +402,7 @@ describe('parse', () => {
 
       # description: config file
       # format: file(json)
-      CONFIG_FILE_PATH=config/test.json
+      CONFIG_FILE_PATH=/config/test.json
     `;
       const result = parse(file);
       expect(result.variables).toEqual([
@@ -480,7 +480,7 @@ describe('parse', () => {
           key: 'CONFIG_FILE_PATH',
           description: 'config file',
           format: 'file(json)',
-          default: 'config/test.json',
+          default: '/config/test.json',
         },
       ]);
     });
