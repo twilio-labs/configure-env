@@ -141,6 +141,18 @@ export function extractFileFormat(format: string): BaseFileFormat {
 }
 
 /**
+ * Checks that all values in a VariableDeclaration that depend on other values
+ * have those dependencies fulfilled, or throws an error if a value's dependency
+ * is missing.
+ * @param declaration a complete VariableDeclaration
+ */
+export function checkDependentValues(declaration: VariableDeclaration) {
+  if (declaration.format.startsWith('file(') && !declaration.contentKey) {
+    throw new Error('file(json) format variables require a contentKey value');
+  }
+}
+
+/**
  * Parses string to check if it's a valid format. If it isn't it will throw an error. Otherwise it will return a sanitized version
  * @param text string to validate as format
  */
@@ -292,6 +304,7 @@ export function parse(envFileContent: string): ParseResult {
       );
       delete fullVariableData.hasExplicitDescription;
       delete fullVariableData.hasAnyComment;
+      checkDependentValues(fullVariableData);
       variables.push({ ...fullVariableData });
       outputTemplateLines.push(
         `${fullVariableData.key}={{${fullVariableData.key}}}`

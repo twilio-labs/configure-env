@@ -356,6 +356,20 @@ describe('parse', () => {
       ]);
     });
 
+    test('rejects file(json) format without contentKey', () => {
+      const file = stripIndent`
+      # Test file
+
+      # description: The authentication JSON file
+      # format: file(json)
+      AUTH_JSON=/auth.json
+
+      # description: Your Twilio Auth Token
+      TWILIO_AUTH_TOKEN=
+    `;
+      expect(() => parse(file)).toThrowError();
+    });
+
     test('recognizes format comment', () => {
       const file = stripIndent`
       # Test file
@@ -402,6 +416,7 @@ describe('parse', () => {
 
       # description: config file
       # format: file(json)
+      # contentKey: AUTH_JSON_CONTENT
       CONFIG_FILE_PATH=/config/test.json
     `;
       const result = parse(file);
@@ -480,6 +495,7 @@ describe('parse', () => {
           key: 'CONFIG_FILE_PATH',
           description: 'config file',
           format: 'file(json)',
+          contentKey: 'AUTH_JSON_CONTENT',
           default: '/config/test.json',
         },
       ]);
