@@ -22,6 +22,7 @@ Any comments that are immediately before a "variable declaration" will be evalua
 - [`link`](#link)
 - [`default`](#default)
 - [`configurable`](#configurable)
+- [`contentKey`](#contentKey)
 
 These comments can be used in any order as long as they are right before the variable declaration with no empty line before it.
 
@@ -60,6 +61,7 @@ Valid values are:
 - `secret` (the same as text but UIs might decide to hide the user input)
 - `list(<X>)` (a comma separated list of values, where `<X>` defines any of the formats above). Example: `list(email)` for `support@twilio.com,open-source@twilio.com`. Use `text` for any type
 - `map(<X>,<Y>)` (a comma and semicolon separted list. often used for key value pairs. `<X>` and `<Y>` represent the format for the key and value). Example: `map(email,phone_number)` for: `help@twilio.com,+1222333444;support@twilio.com,+13334445555`
+- `file(<X>)` (the path to a file in format `<X>`, which currently only supports `json`). Example: `file(json)` for `/config/test.json`
 
 **Default:** `text`
 
@@ -289,6 +291,35 @@ PORT=8080
 ]
 ```
 
+### `contentKey`
+
+The `contentKey` option is used with `file(json)` formatted variables to specify a required field that will contain a pointer to the user-supplied file content. This field is currently only used by Twilio CodeExchange.
+
+**Default:** `null`
+
+**Example `.env` file:**
+
+```bash
+# description: The authentication JSON file
+# format: file(json)
+# contentKey: AUTH_JSON_CONTENT
+AUTH_JSON=/auth.json
+```
+
+**Parsed Result (with omitted default values):**
+
+```json
+[
+  {
+    "key": "AUTH_JSON",
+    "description": "The authentication JSON file",
+    "format": "file(json)",
+    "contentKey": "AUTH_JSON_CONTENT",
+    "default": "/auth.json"
+  }
+]
+```
+
 ## Best Effort Guessing
 
 In order to be as compatible with existing `.env` files as possible, this schema will do some best effort guessing to determine meta information.
@@ -351,10 +382,12 @@ type BaseVariableFormat =
   | 'integer'
   | 'number'
   | 'secret';
+type BaseFileFormat = 'json';
 type VariableFormat =
   | BaseVariableFormat
   | ListFormat<BaseVariableFormat>
-  | MapFormat<BaseVariableFormat, BaseVariableFormat>;
+  | MapFormat<BaseVariableFormat, BaseVariableFormat>
+  | FileFormat<BaseFileFormat>;
 
 type VariableDeclaration = {
   key: string;

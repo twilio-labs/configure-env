@@ -12,10 +12,18 @@ export const VALID_BASE_FORMATS = [
   'secret',
 ] as const;
 
+export const VALID_FILE_FORMATS = ['json'] as const;
+
 export type BaseVariableFormat = typeof VALID_BASE_FORMATS[number];
 export type ListFormat = string;
 export type MapFormat = string;
-export type VariableFormat = BaseVariableFormat | ListFormat | MapFormat;
+export type BaseFileFormat = typeof VALID_FILE_FORMATS[number];
+export type FileFormat = string;
+export type VariableFormat =
+  | BaseVariableFormat
+  | ListFormat
+  | MapFormat
+  | FileFormat;
 
 export type VariableDeclaration = {
   key: string;
@@ -27,6 +35,7 @@ export type VariableDeclaration = {
   configurable: boolean;
   hasExplicitDescription?: boolean;
   hasAnyComment?: boolean;
+  contentKey: string | null;
 };
 
 export type ParseResult = {
@@ -42,6 +51,7 @@ export const DEFAULT_ENTRY: VariableDeclaration = {
   link: null,
   default: null,
   configurable: true,
+  contentKey: null,
 };
 
 const INVALID_DECLARATION_CHARACTERS = /[^a-zA-Z1-9_]/i;
@@ -114,6 +124,34 @@ export function extractMapFormats(
   }
 }
 
+const validFileFormats: string[] = [...VALID_FILE_FORMATS];
+
+/**
+ * Extracts the format wrapped in `file()` or throws an error if it's an invalid format
+ * @param format a format string wrapped with `file()`
+ */
+export function extractFileFormat(format: string): BaseFileFormat {
+  let fileValue = removePrefix('file(', format);
+  fileValue = fileValue.substr(0, fileValue.length - 1).trim();
+  if (validFileFormats.includes(fileValue)) {
+    return fileValue as BaseFileFormat;
+  } else {
+    throw new Error(`Invalid file format value. Received "${fileValue}"`);
+  }
+}
+
+/**
+ * Checks that all values in a VariableDeclaration that depend on other values
+ * have those dependencies fulfilled, or throws an error if a value's dependency
+ * is missing.
+ * @param declaration a complete VariableDeclaration
+ */
+export function checkDependentValues(declaration: VariableDeclaration) {
+  if (declaration.format.startsWith('file(') && !declaration.contentKey) {
+    throw new Error('file(json) format variables require a contentKey value');
+  }
+}
+
 /**
  * Parses string to check if it's a valid format. If it isn't it will throw an error. Otherwise it will return a sanitized version
  * @param text string to validate as format
@@ -131,6 +169,10 @@ export function textToFormat(text: string): VariableFormat {
     // map format
     const [keyFormat, valueFormat] = extractMapFormats(sanitizedText);
     return `map(${keyFormat},${valueFormat})`;
+  } else if (sanitizedText.startsWith('file(') && sanitizedText.endsWith(')')) {
+    // file format
+    const fileValueFormat = extractFileFormat(sanitizedText);
+    return `file(${fileValueFormat})`;
   }
 
   throw new Error(`Invalid format. Received: "${text}"`);
@@ -184,6 +226,9 @@ export function parseCommentLine(
   } else if (line.startsWith('configurable:')) {
     const val = textToBoolean(removePrefix('configurable:', line));
     addedInfo.configurable = val;
+  } else if (line.startsWith('contentKey:')) {
+    const val = trim(removePrefix('contentKey:', line));
+    addedInfo.contentKey = val;
   } else {
     if (!currentDeclaration.hasExplicitDescription) {
       addedInfo.description = currentDeclaration.description
@@ -259,6 +304,7 @@ export function parse(envFileContent: string): ParseResult {
       );
       delete fullVariableData.hasExplicitDescription;
       delete fullVariableData.hasAnyComment;
+      checkDependentValues(fullVariableData);
       variables.push({ ...fullVariableData });
       outputTemplateLines.push(
         `${fullVariableData.key}={{${fullVariableData.key}}}`
