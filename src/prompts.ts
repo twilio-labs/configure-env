@@ -1,9 +1,12 @@
-import prompts, { Answers, PromptObject, PromptType } from 'prompts';
+import prompts, { Answers, Choice, PromptObject, PromptType } from 'prompts';
 import { WriteStream } from 'tty';
-import { ParseResult, VariableFormat } from './parser';
+import { extractEnumFormat, ParseResult, VariableFormat } from './parser';
 import { getValidator } from './validators';
 
 export function getPromptType(format: VariableFormat): PromptType {
+  if(format.startsWith('enum(')){
+    return 'select';
+  }
   switch (format) {
     case 'secret':
       return 'invisible';
@@ -13,6 +16,29 @@ export function getPromptType(format: VariableFormat): PromptType {
     default:
       return 'text';
   }
+}
+     
+export function getChoices(format: VariableFormat): Choice[] | undefined {
+  if(format.startsWith('enum(')){
+    const enumValues = extractEnumFormat(format);
+    return enumValues.split(',').map(possibleValue => ({
+      title: possibleValue,
+      value: possibleValue
+    }))
+  }
+}
+   
+export function getInitial(format: VariableFormat, initialValue: string | null): any {
+  if(format.startsWith('enum(')){
+    const enumValues = extractEnumFormat(format);
+    const values =  enumValues.split(',');
+    for(let [index, value] of values.entries()) {
+      if(value === initialValue) {
+        return index;
+      }
+    }
+  }
+  return initialValue;
 }
 
 export function createQuestions(
@@ -26,10 +52,11 @@ export function createQuestions(
         type: getPromptType(entry.format),
         name: entry.key,
         message: entry.description || `Please enter a value for ${entry.key}`,
-        initial: entry.default || undefined,
+        initial: getInitial(entry.format, entry.default),
         validate: getValidator(entry.format),
         stdout: promptStream,
         float: entry.format === 'number' ? true : undefined,
+        choices: getChoices(entry.format),
       };
     });
 }

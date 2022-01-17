@@ -104,6 +104,21 @@ export function extractListFormat(format: string): BaseVariableFormat {
     throw new Error(`Invalid list format value. Received "${listValue}"`);
   }
 }
+                               
+/**
+ * Extracts the format wrapped in `enum()` or throws an error if it's an invalid format
+ * @param format a format string wrapped with `enum()`
+ */
+ export function extractEnumFormat(format: string): BaseVariableFormat {
+  let enumValue = removePrefix('enum(', format);
+  enumValue = enumValue.substr(0, enumValue.length - 1).trim();
+  const enumValues = enumValue.split(',');
+  if (enumValues.length > 0) {
+    return enumValue as BaseVariableFormat;
+  } else {
+    throw new Error(`Invalid enum format value. Received "${enumValue}"`);
+  }
+}
 
 /**
  * Extracts the formats wrapped in `map()` or throws an error if one is an invalid format
@@ -173,6 +188,10 @@ export function textToFormat(text: string): VariableFormat {
     // file format
     const fileValueFormat = extractFileFormat(sanitizedText);
     return `file(${fileValueFormat})`;
+  } else if (sanitizedText.startsWith('enum(') && sanitizedText.endsWith(')')) {
+    // file format
+    const enumValueFormat = extractEnumFormat(sanitizedText);
+    return `enum(${enumValueFormat})`;
   }
 
   throw new Error(`Invalid format. Received: "${text}"`);
