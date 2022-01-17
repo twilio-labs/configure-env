@@ -1,5 +1,6 @@
 import fs from 'fs';
 import os from 'os';
+import dotenv from 'dotenv';
 
 export const VALID_BASE_FORMATS = [
   'text',
@@ -333,4 +334,8 @@ export async function parseFile(
 ): Promise<ParseResult> {
   const fileContent = await fs.promises.readFile(filePath, 'utf8');
   return parse(fileContent);
+}
+
+export async function parseAsObject(fileContent: string): Promise<{ [_: string]: any }> {
+  return dotenv.parse(Buffer.from(fileContent))
 }

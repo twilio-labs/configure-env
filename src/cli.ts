@@ -56,6 +56,14 @@ export async function getExampleContent(fileName: string): Promise<string> {
   return readFile(fullPath, 'utf8');
 }
 
+
+export async function getOutputContent(fileName: string): Promise<string | undefined> {
+  const fullPath = resolve(process.cwd(), fileName);
+  if(fs.existsSync(fullPath)) {
+    return readFile(fullPath, 'utf8');
+  }
+}
+
 export function getOutputStream(fileName: string): fs.WriteStream {
   const fullPath = resolve(process.cwd(), fileName);
   return fs.createWriteStream(fullPath);
@@ -68,11 +76,13 @@ export async function cli(
 ) {
   const options = parseArgs(args);
   const exampleFileContent = await getExampleContent(options.input);
+  const outputFileContent = await getOutputContent(options.output);
   const output = !ttyOutStream.isTTY
     ? ((ttyOutStream as unknown) as fs.WriteStream)
     : getOutputStream(options.output);
 
   const config: Config = {
+    outputFileContent,
     exampleFileContent,
     output,
     promptStream,
