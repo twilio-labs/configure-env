@@ -12,6 +12,8 @@ export interface CliArguments extends Arguments {
   output: string;
   verbose: boolean;
   input: string;
+  useOutputFileDefaults: boolean;
+  promptForExistingVars: boolean;
 }
 
 export function parseArgs(args: string[]): CliArguments {
@@ -45,6 +47,8 @@ export function parseArgs(args: string[]): CliArguments {
         desc: 'Location of input .env.example file for prompts',
       },
       verbose: { type: 'boolean', default: false },
+      useOutputFileDefaults: { type: 'boolean', default: false },
+      promptForExistingVars: { type: 'boolean', default: true },
     })
     .parse(args);
 
@@ -54,6 +58,14 @@ export function parseArgs(args: string[]): CliArguments {
 export async function getExampleContent(fileName: string): Promise<string> {
   const fullPath = resolve(process.cwd(), fileName);
   return readFile(fullPath, 'utf8');
+}
+
+
+export async function getOutputContent(fileName: string): Promise<string | undefined> {
+  const fullPath = resolve(process.cwd(), fileName);
+  if(fs.existsSync(fullPath)) {
+    return readFile(fullPath, 'utf8');
+  }
 }
 
 export function getOutputStream(fileName: string): fs.WriteStream {
@@ -68,14 +80,18 @@ export async function cli(
 ) {
   const options = parseArgs(args);
   const exampleFileContent = await getExampleContent(options.input);
+  const outputFileContent = await getOutputContent(options.output);
   const output = !ttyOutStream.isTTY
     ? ((ttyOutStream as unknown) as fs.WriteStream)
     : getOutputStream(options.output);
 
   const config: Config = {
+    outputFileContent,
     exampleFileContent,
     output,
     promptStream,
+    useOutputFileDefaults: options.useOutputFileDefaults,
+    promptForExistingVars: options.promptForExistingVars,
   };
   return configureEnv(config);
 }

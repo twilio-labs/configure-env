@@ -11,11 +11,29 @@ export type Config = {
   output: fs.WriteStream;
   promptStream: tty.WriteStream;
   exampleFileContent: string;
+  outputFileContent?: string;
+  useOutputFileDefaults: boolean;
+  promptForExistingVars: boolean;
 };
 
 export async function configureEnv(config: Config) {
   const parsedExample = parserLib.parse(config.exampleFileContent);
-
+  // Use default from existing .env values if file exists
+  if(config.outputFileContent) {
+    config.promptStream.write(
+      `${info} ${config.output.path} already present using existing values as defaults\n`
+    );
+    const parsedEnv = await parserLib.parseAsObject(config.outputFileContent);
+    parsedExample.variables.forEach(variable => {
+      if ( variable.configurable && parsedEnv[variable.key]) {
+        if(config.useOutputFileDefaults) {
+          variable.default = parsedEnv[variable.key];
+        }
+        // is prompt needed if value is already set in .env
+        variable.configurable = config.promptForExistingVars;
+      }
+    })
+  }
   config.promptStream.write(
     `Configuring your environment. Please fill out the following info\n`
   );

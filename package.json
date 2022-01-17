@@ -26,6 +26,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/common-tags": "^1.8.0",
+    "@types/dotenv": "^8.2.0",
     "@types/google-libphonenumber": "^7.4.19",
     "@types/jest": "^24.0.23",
     "@types/mock-fs": "^4.10.0",
@@ -48,6 +49,7 @@
   },
   "dependencies": {
     "@types/node": "^14.0.13",
+    "dotenv": "^14.1.0",
     "email-regex": "^4.0.0",
     "google-libphonenumber": "^3.2.10",
     "log-symbols": "^3.0.0",
