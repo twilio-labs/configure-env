@@ -12,6 +12,8 @@ export interface CliArguments extends Arguments {
   output: string;
   verbose: boolean;
   input: string;
+  useOutputFileDefaults: boolean;
+  promptForExistingVars: boolean;
 }
 
 export function parseArgs(args: string[]): CliArguments {
@@ -45,6 +47,8 @@ export function parseArgs(args: string[]): CliArguments {
         desc: 'Location of input .env.example file for prompts',
       },
       verbose: { type: 'boolean', default: false },
+      useOutputFileDefaults: { type: 'boolean', default: false },
+      promptForExistingVars: { type: 'boolean', default: true },
     })
     .parse(args);
 
@@ -86,6 +90,8 @@ export async function cli(
     exampleFileContent,
     output,
     promptStream,
+    useOutputFileDefaults: options.useOutputFileDefaults,
+    promptForExistingVars: options.promptForExistingVars,
   };
   return configureEnv(config);
 }
