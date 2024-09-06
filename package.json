@@ -52,7 +52,7 @@
     "google-libphonenumber": "^3.2.10",
     "log-symbols": "^3.0.0",
     "prompts": "^2.3.2",
-    "yargs": "^15.3.1"
+    "yargs": "^16.1.1"
   },
   "config": {
     "commitizen": {
